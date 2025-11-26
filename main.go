@@ -36,7 +36,6 @@ type VendaDetalhe struct {
 	PercentualStr string  `json:"percentualStr"`
 }
 
-// Estruturas para Estoque
 type Produto struct {
 	CodigoProduto    int    `json:"codigoProduto"`
 	DescricaoProduto string `json:"descricaoProduto"`
@@ -216,7 +215,6 @@ func processarMovimentacao(req MovimentacaoRequest) (*Movimentacao, error) {
 	produto := &estoqueData.Estoque[produtoIndex]
 	estoqueAnterior := produto.Estoque
 
-	// Calcular novo estoque
 	novoEstoque := estoqueAnterior
 	if req.Tipo == "ENTRADA" {
 		novoEstoque += req.Quantidade
@@ -274,6 +272,10 @@ func main() {
 		render(w, "estoque.html", nil)
 	})
 
+	http.HandleFunc("/juros", func(w http.ResponseWriter, r *http.Request) {
+		render(w, "juros.html", nil)
+	})
+
 	http.HandleFunc("/api/comissoes", func(w http.ResponseWriter, r *http.Request) {
 		comissoes, err := processarComissoes()
 		if err != nil {
@@ -323,6 +325,71 @@ func main() {
 		}
 
 		http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
+	})
+
+	http.HandleFunc("/api/calcular-juros", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" {
+			http.Error(w, "Método não permitido", http.StatusMethodNotAllowed)
+			return
+		}
+
+		var req struct {
+			Valor          float64 `json:"valor"`
+			DataVencimento string  `json:"dataVencimento"`
+		}
+
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			http.Error(w, "Dados inválidos", http.StatusBadRequest)
+			return
+		}
+
+
+		dataVenc, err := time.Parse("2006-01-02", req.DataVencimento)
+		if err != nil {
+			http.Error(w, "Data inválida", http.StatusBadRequest)
+			return
+		}
+
+		dataAtual := time.Now()
+
+		diasAtraso := int(dataAtual.Sub(dataVenc).Hours() / 24)
+
+		var valorJuros float64
+		var valorTotal float64
+		var multa float64
+
+		if diasAtraso > 0 {
+			multa = 0.025
+			valorJuros = req.Valor * multa * float64(diasAtraso)
+			valorTotal = req.Valor + valorJuros
+		} else {
+			diasAtraso = 0
+			valorJuros = 0
+			valorTotal = req.Valor
+		}
+
+		resultado := map[string]interface{}{
+			"valorOriginal":   req.Valor,
+			"dataVencimento":  req.DataVencimento,
+			"dataCalculo":     dataAtual.Format("2006-01-02"),
+			"diasAtraso":      diasAtraso,
+			"multaDiaria":     multa * 100,
+			"valorJuros":      valorJuros,
+			"valorTotal":      valorTotal,
+			"statusPagamento": func() string {
+				if diasAtraso == 0 {
+					return "EM DIA"
+				} else if diasAtraso <= 30 {
+					return "ATRASADO"
+				} else {
+					return "MUITO ATRASADO"
+				}
+			}(),
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resultado)
 	})
 
 	log.Println("Server started on http://localhost:5555")

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cálculo de Juros</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/juros.css">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <a href="/" class="back-btn">← Voltar</a>
+            <h1>💸 Cálculo de Juros</h1>
+            <p class="subtitle">Calcule juros sobre valores vencidos</p>
+        </header>
+
+        <div class="info-box">
+            <h3>📋 Regra de Cálculo</h3>
+            <div class="regra-info">
+                <div class="regra-item">
+                    <span class="icon">📅</span>
+                    <div>
+                        <strong>Multa Diária</strong>
+                        <p>2,5% ao dia sobre o valor original</p>
+                    </div>
+                </div>
+                <div class="regra-item">
+                    <span class="icon">🧮</span>
+                    <div>
+                        <strong>Fórmula</strong>
+                        <p>Valor Total = Valor Original + (Valor × 0,025 × Dias de Atraso)</p>
+                    </div>
+                </div>
+                <div class="regra-item">
+                    <span class="icon">⏰</span>
+                    <div>
+                        <strong>Dias de Atraso</strong>
+                        <p>Calculado desde a data de vencimento até hoje</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="form-section">
+                <h2>💰 Calcular Juros</h2>
+                <form id="form-juros" class="form-juros">
+                    <div class="form-group">
+                        <label for="valor">Valor Original (R$)</label>
+                        <input 
+                            type="number" 
+                            id="valor" 
+                            name="valor" 
+                            step="0.01" 
+                            min="0.01" 
+                            required
+                            placeholder="0,00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dataVencimento">Data de Vencimento</label>
+                        <input 
+                            type="date" 
+                            id="dataVencimento" 
+                            name="dataVencimento" 
+                            required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Calcular Juros</button>
+                </form>
+            </div>
+
+            <div class="resultado-section" id="resultado-section" style="display: none;">
+                <h2>📊 Resultado do Cálculo</h2>
+                <div id="resultado-content" class="resultado-content">
+                </div>
+            </div>
+        </div>
+
+        <div class="exemplos-section">
+            <h2>💡 Exemplos de Cálculo</h2>
+            <div class="exemplos-grid">
+                <div class="exemplo-card">
+                    <h3>Exemplo 1: Atraso de 1 dia</h3>
+                    <div class="exemplo-calculo">
+                        <p><strong>Valor:</strong> R$ 1.000,00</p>
+                        <p><strong>Vencimento:</strong> Ontem</p>
+                        <p><strong>Dias de atraso:</strong> 1 dia</p>
+                        <p class="calculo">R$ 1.000,00 × 2,5% × 1 = R$ 25,00</p>
+                        <p class="total"><strong>Total a pagar:</strong> R$ 1.025,00</p>
+                    </div>
+                </div>
+
+                <div class="exemplo-card">
+                    <h3>Exemplo 2: Atraso de 10 dias</h3>
+                    <div class="exemplo-calculo">
+                        <p><strong>Valor:</strong> R$ 500,00</p>
+                        <p><strong>Vencimento:</strong> 10 dias atrás</p>
+                        <p><strong>Dias de atraso:</strong> 10 dias</p>
+                        <p class="calculo">R$ 500,00 × 2,5% × 10 = R$ 125,00</p>
+                        <p class="total"><strong>Total a pagar:</strong> R$ 625,00</p>
+                    </div>
+                </div>
+
+                <div class="exemplo-card">
+                    <h3>Exemplo 3: Atraso de 30 dias</h3>
+                    <div class="exemplo-calculo">
+                        <p><strong>Valor:</strong> R$ 2.000,00</p>
+                        <p><strong>Vencimento:</strong> 30 dias atrás</p>
+                        <p><strong>Dias de atraso:</strong> 30 dias</p>
+                        <p class="calculo">R$ 2.000,00 × 2,5% × 30 = R$ 1.500,00</p>
+                        <p class="total"><strong>Total a pagar:</strong> R$ 3.500,00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const hoje = new Date().toISOString().split('T')[0];
+        document.getElementById('dataVencimento').setAttribute('max', hoje);
+
+        document.getElementById('form-juros').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const dados = {
+                valor: parseFloat(formData.get('valor')),
+                dataVencimento: formData.get('dataVencimento')
+            };
+
+            try {
+                const response = await fetch('/api/calcular-juros', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao calcular juros');
+                }
+
+                const resultado = await response.json();
+                exibirResultado(resultado);
+
+            } catch (error) {
+                alert('Erro ao calcular: ' + error.message);
+            }
+        });
+
+        function exibirResultado(res) {
+            const section = document.getElementById('resultado-section');
+            const content = document.getElementById('resultado-content');
+
+            const dataVenc = new Date(res.dataVencimento + 'T00:00:00');
+            const dataCalc = new Date(res.dataCalculo + 'T00:00:00');
+            
+            const dataVencFormatada = dataVenc.toLocaleDateString('pt-BR');
+            const dataCalcFormatada = dataCalc.toLocaleDateString('pt-BR');
+
+            let statusClass = 'emdia';
+            if (res.statusPagamento === 'ATRASADO') statusClass = 'atrasado';
+            if (res.statusPagamento === 'MUITO ATRASADO') statusClass = 'muito-atrasado';
+
+            let statusIcone = '✅';
+            if (res.statusPagamento === 'ATRASADO') statusIcone = '⚠️';
+            if (res.statusPagamento === 'MUITO ATRASADO') statusIcone = '🚨';
+
+            content.innerHTML = `
+                <div class="status-badge ${statusClass}">
+                    ${statusIcone} ${res.statusPagamento}
+                </div>
+
+                <div class="resultado-grid">
+                    <div class="resultado-item">
+                        <span class="label">Valor Original</span>
+                        <span class="value">R$ ${res.valorOriginal.toFixed(2)}</span>
+                    </div>
+
+                    <div class="resultado-item">
+                        <span class="label">Data de Vencimento</span>
+                        <span class="value">${dataVencFormatada}</span>
+                    </div>
+
+                    <div class="resultado-item">
+                        <span class="label">Data do Cálculo</span>
+                        <span class="value">${dataCalcFormatada}</span>
+                    </div>
+
+                    <div class="resultado-item destaque">
+                        <span class="label">Dias de Atraso</span>
+                        <span class="value dias">${res.diasAtraso} ${res.diasAtraso === 1 ? 'dia' : 'dias'}</span>
+                    </div>
+
+                    <div class="resultado-item">
+                        <span class="label">Multa Diária</span>
+                        <span class="value">${res.multaDiaria}%</span>
+                    </div>
+
+                    <div class="resultado-item destaque">
+                        <span class="label">Valor dos Juros</span>
+                        <span class="value juros">R$ ${res.valorJuros.toFixed(2)}</span>
+                    </div>
+                </div>
+
+                <div class="total-final">
+                    <span class="label">Valor Total a Pagar</span>
+                    <span class="value">R$ ${res.valorTotal.toFixed(2)}</span>
+                </div>
+
+                ${res.diasAtraso > 0 ? `
+                    <div class="info-adicional">
+                        <p>📊 <strong>Detalhamento:</strong></p>
+                        <p class="formula">
+                            R$ ${res.valorOriginal.toFixed(2)} × ${res.multaDiaria}% × ${res.diasAtraso} dias = 
+                            <strong>R$ ${res.valorJuros.toFixed(2)}</strong>
+                        </p>
+                        <p class="total-calc">
+                            R$ ${res.valorOriginal.toFixed(2)} + R$ ${res.valorJuros.toFixed(2)} = 
+                            <strong>R$ ${res.valorTotal.toFixed(2)}</strong>
+                        </p>
+                    </div>
+                ` : ''}
+            `;
+
+            section.style.display = 'block';
+            section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
