@@ -1,0 +1,366 @@
+.page-header {
+    text-align: center;
+    color: white;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.page-header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.back-btn {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(-5px);
+}
+
+.estoque-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.produtos-section,
+.movimentacao-section,
+.historico-section {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.produtos-section h2,
+.movimentacao-section h2,
+.historico-section h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.3em;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.spinner {
+    border: 4px solid rgba(102, 126, 234, 0.2);
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.empty-state {
+    text-align: center;
+    color: #999;
+    padding: 40px 20px;
+    font-style: italic;
+}
+
+.produtos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.produto-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border: 2px solid #f0f0f0;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.produto-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.1);
+}
+
+.produto-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.produto-codigo {
+    font-size: 0.85em;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.produto-info h3 {
+    color: #333;
+    font-size: 1.1em;
+    margin: 0;
+}
+
+.produto-estoque {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 8px;
+    min-width: 80px;
+}
+
+.produto-estoque.baixo {
+    background: #fee;
+    color: #c33;
+}
+
+.produto-estoque.medio {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.produto-estoque.alto {
+    background: #d4edda;
+    color: #155724;
+}
+
+.estoque-label {
+    font-size: 0.75em;
+    opacity: 0.8;
+}
+
+.estoque-valor {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.form-movimentacao {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    color: #333;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.form-group select,
+.form-group input,
+.form-group textarea {
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1em;
+    font-family: inherit;
+    transition: border-color 0.3s ease;
+}
+
+.form-group select:focus,
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.resultado-movimentacao {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.resultado-movimentacao.sucesso {
+    background: #d4edda;
+    border: 2px solid #28a745;
+    color: #155724;
+}
+
+.resultado-movimentacao.erro {
+    background: #f8d7da;
+    border: 2px solid #dc3545;
+    color: #721c24;
+}
+
+.resultado-movimentacao h3 {
+    margin-bottom: 10px;
+}
+
+.resultado-movimentacao p {
+    margin: 5px 0;
+}
+
+.historico-section {
+    grid-column: 1 / -1;
+}
+
+.movimentacoes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.movimentacao-card {
+    border-radius: 10px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.movimentacao-card.entrada {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border: 2px solid #28a745;
+}
+
+.movimentacao-card.saida {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border: 2px solid #dc3545;
+}
+
+.movimentacao-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.mov-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.mov-id {
+    font-weight: 600;
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+.mov-tipo {
+    font-weight: bold;
+    font-size: 0.95em;
+}
+
+.mov-body h3 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+.mov-descricao {
+    color: #555;
+    margin-bottom: 15px;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+.mov-detalhes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.detalhe {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+}
+
+.detalhe .label {
+    color: #666;
+}
+
+.detalhe .value {
+    font-weight: 600;
+    color: #333;
+}
+
+.detalhe.destaque .value {
+    color: #667eea;
+    font-size: 1.1em;
+}
+
+.mov-data {
+    text-align: right;
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 10px;
+}
+
+@media (max-width: 968px) {
+    .estoque-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .page-header h1 {
+        font-size: 1.8em;
+        margin-top: 40px;
+    }
+    
+    .back-btn {
+        position: static;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+
+    .movimentacoes-grid {
+        grid-template-columns: 1fr;
+    }
+}

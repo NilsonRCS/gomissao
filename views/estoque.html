@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Estoque</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/estoque.css">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <a href="/" class="back-btn">← Voltar</a>
+            <h1>📦 Controle de Estoque</h1>
+            <p class="subtitle">Gerencie entradas e saídas de produtos</p>
+        </header>
+
+        <div class="estoque-grid">
+            <div class="produtos-section">
+                <h2>📋 Produtos em Estoque</h2>
+                <div id="produtos-list" class="produtos-list">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Carregando produtos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="movimentacao-section">
+                <h2>➕ Nova Movimentação</h2>
+                <form id="form-movimentacao" class="form-movimentacao">
+                    <div class="form-group">
+                        <label for="produto">Produto</label>
+                        <select id="produto" name="produto" required>
+                            <option value="">Selecione um produto</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tipo">Tipo de Movimentação</label>
+                        <select id="tipo" name="tipo" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="ENTRADA">➕ Entrada</option>
+                            <option value="SAIDA">➖ Saída</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quantidade">Quantidade</label>
+                        <input type="number" id="quantidade" name="quantidade" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descricao">Descrição</label>
+                        <textarea id="descricao" name="descricao" rows="3" required placeholder="Ex: Compra de fornecedor, Venda para cliente..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Registrar Movimentação</button>
+                </form>
+
+                <div id="resultado-movimentacao" class="resultado-movimentacao" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="historico-section">
+            <h2>📊 Histórico de Movimentações</h2>
+            <div id="historico-list" class="historico-list">
+                <p class="empty-state">Nenhuma movimentação registrada ainda.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let produtos = [];
+        let movimentacoes = [];
+
+        async function carregarProdutos() {
+            try {
+                const response = await fetch('/api/estoque');
+                produtos = await response.json();
+                
+                exibirProdutos();
+                popularSelectProdutos();
+            } catch (error) {
+                console.error('Erro ao carregar produtos:', error);
+            }
+        }
+
+        async function carregarMovimentacoes() {
+            try {
+                const response = await fetch('/api/movimentacoes');
+                movimentacoes = await response.json();
+                
+                exibirHistorico();
+            } catch (error) {
+                console.error('Erro ao carregar movimentações:', error);
+            }
+        }
+
+        function exibirProdutos() {
+            const container = document.getElementById('produtos-list');
+            
+            if (produtos.length === 0) {
+                container.innerHTML = '<p class="empty-state">Nenhum produto cadastrado.</p>';
+                return;
+            }
+
+            let html = '';
+            produtos.forEach(produto => {
+                const estoqueClass = produto.estoque < 50 ? 'baixo' : 
+                                   produto.estoque < 100 ? 'medio' : 'alto';
+                
+                html += `
+                    <div class="produto-card">
+                        <div class="produto-info">
+                            <span class="produto-codigo">#${produto.codigoProduto}</span>
+                            <h3>${produto.descricaoProduto}</h3>
+                        </div>
+                        <div class="produto-estoque ${estoqueClass}">
+                            <span class="estoque-label">Estoque</span>
+                            <span class="estoque-valor">${produto.estoque}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function popularSelectProdutos() {
+            const select = document.getElementById('produto');
+            
+            produtos.forEach(produto => {
+                const option = document.createElement('option');
+                option.value = produto.codigoProduto;
+                option.textContent = `#${produto.codigoProduto} - ${produto.descricaoProduto} (Est: ${produto.estoque})`;
+                select.appendChild(option);
+            });
+        }
+
+        function exibirHistorico() {
+            const container = document.getElementById('historico-list');
+            
+            if (movimentacoes.length === 0) {
+                container.innerHTML = '<p class="empty-state">Nenhuma movimentação registrada ainda.</p>';
+                return;
+            }
+
+            const movsOrdenadas = [...movimentacoes].sort((a, b) => 
+                new Date(b.dataHora) - new Date(a.dataHora)
+            );
+
+            let html = '<div class="movimentacoes-grid">';
+            movsOrdenadas.forEach(mov => {
+                const data = new Date(mov.dataHora);
+                const dataFormatada = data.toLocaleString('pt-BR');
+                const tipoClass = mov.tipo === 'ENTRADA' ? 'entrada' : 'saida';
+                const tipoIcone = mov.tipo === 'ENTRADA' ? '➕' : '➖';
+                
+                html += `
+                    <div class="movimentacao-card ${tipoClass}">
+                        <div class="mov-header">
+                            <span class="mov-id">#${mov.id}</span>
+                            <span class="mov-tipo">${tipoIcone} ${mov.tipo}</span>
+                        </div>
+                        <div class="mov-body">
+                            <h3>${mov.descricaoProduto}</h3>
+                            <p class="mov-descricao">${mov.descricao}</p>
+                            <div class="mov-detalhes">
+                                <div class="detalhe">
+                                    <span class="label">Quantidade:</span>
+                                    <span class="value">${mov.quantidade}</span>
+                                </div>
+                                <div class="detalhe">
+                                    <span class="label">Estoque Anterior:</span>
+                                    <span class="value">${mov.estoqueAnterior}</span>
+                                </div>
+                                <div class="detalhe destaque">
+                                    <span class="label">Estoque Final:</span>
+                                    <span class="value">${mov.estoqueFinal}</span>
+                                </div>
+                            </div>
+                            <p class="mov-data">${dataFormatada}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            container.innerHTML = html;
+        }
+
+        document.getElementById('form-movimentacao').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const dados = {
+                codigoProduto: parseInt(formData.get('produto')),
+                tipo: formData.get('tipo'),
+                quantidade: parseInt(formData.get('quantidade')),
+                descricao: formData.get('descricao')
+            };
+
+            try {
+                const response = await fetch('/api/movimentacoes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao processar movimentação');
+                }
+
+                const movimentacao = await response.json();
+                
+                const resultado = document.getElementById('resultado-movimentacao');
+                resultado.style.display = 'block';
+                resultado.className = 'resultado-movimentacao sucesso';
+                resultado.innerHTML = `
+                    <h3>✅ Movimentação Registrada!</h3>
+                    <p><strong>ID:</strong> #${movimentacao.id}</p>
+                    <p><strong>Produto:</strong> ${movimentacao.descricaoProduto}</p>
+                    <p><strong>Tipo:</strong> ${movimentacao.tipo}</p>
+                    <p><strong>Quantidade:</strong> ${movimentacao.quantidade}</p>
+                    <p><strong>Estoque Final:</strong> ${movimentacao.estoqueFinal}</p>
+                `;
+
+                e.target.reset();
+
+                await carregarProdutos();
+                await carregarMovimentacoes();
+
+                setTimeout(() => {
+                    resultado.style.display = 'none';
+                }, 5000);
+
+            } catch (error) {
+                const resultado = document.getElementById('resultado-movimentacao');
+                resultado.style.display = 'block';
+                resultado.className = 'resultado-movimentacao erro';
+                resultado.innerHTML = `
+                    <h3>❌ Erro ao Registrar</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await carregarProdutos();
+            await carregarMovimentacoes();
+        });
+    </script>
+</body>
+</html>

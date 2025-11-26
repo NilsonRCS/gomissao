@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "codigoProduto": 101,
+    "descricaoProduto": "Caneta Azul",
+    "tipo": "ENTRADA",
+    "quantidade": 25,
+    "descricao": "Caneta azul, azul caneta",
+    "estoqueAnterior": 150,
+    "estoqueFinal": 175,
+    "dataHora": "2025-11-26T16:33:18.7578155-03:00"
+  },
+  {
+    "id": 2,
+    "codigoProduto": 104,
+    "descricaoProduto": "Lápis Preto HB",
+    "tipo": "SAIDA",
+    "quantidade": 12,
+    "descricao": "SAIU",
+    "estoqueAnterior": 320,
+    "estoqueFinal": 308,
+    "dataHora": "2025-11-26T16:34:07.0272149-03:00"
+  },
+  {
+    "id": 3,
+    "codigoProduto": 105,
+    "descricaoProduto": "Marcador de Texto Amarelo",
+    "tipo": "ENTRADA",
+    "quantidade": 15,
+    "descricao": "sei la",
+    "estoqueAnterior": 90,
+    "estoqueFinal": 105,
+    "dataHora": "2025-11-26T17:14:11.8857896-03:00"
+  }
+]
