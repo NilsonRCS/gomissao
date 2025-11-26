@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cálculo de Comissões</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/comissoes.css">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <a href="/" class="back-btn">← Voltar</a>
+            <h1>💰 Cálculo de Comissões</h1>
+            <p class="subtitle">Análise de vendas e comissões por vendedor</p>
+        </header>
+
+        <div class="info-box">
+            <h3>📋 Regras de Comissão</h3>
+            <div class="rules-grid">
+                <div class="rule">
+                    <span class="rule-label">Abaixo de R$ 100,00</span>
+                    <span class="rule-value">0% - Sem comissão</span>
+                </div>
+                <div class="rule">
+                    <span class="rule-label">De R$ 100,00 a R$ 499,99</span>
+                    <span class="rule-value">1% de comissão</span>
+                </div>
+                <div class="rule">
+                    <span class="rule-label">A partir de R$ 500,00</span>
+                    <span class="rule-value">5% de comissão</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Calculando comissões...</p>
+        </div>
+
+        <div id="resultados" class="resultados" style="display: none;">
+        </div>
+    </div>
+
+    <script>
+        async function carregarComissoes() {
+            try {
+                const response = await fetch('/api/comissoes');
+                const comissoes = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('resultados').style.display = 'block';
+                
+                exibirResultados(comissoes);
+            } catch (error) {
+                console.error('Erro ao carregar comissões:', error);
+                document.getElementById('loading').innerHTML = 
+                    '<p style="color: red;">Erro ao carregar dados</p>';
+            }
+        }
+
+        function exibirResultados(comissoes) {
+            const container = document.getElementById('resultados');
+            
+            let totalGeralVendas = 0;
+            let totalGeralComissoes = 0;
+            
+            comissoes.forEach(c => {
+                totalGeralVendas += c.totalVendas;
+                totalGeralComissoes += c.totalComissao;
+            });
+
+            let html = `
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <div class="summary-icon">💵</div>
+                        <div class="summary-content">
+                            <h3>Total em Vendas</h3>
+                            <p class="summary-value">R$ ${totalGeralVendas.toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">💰</div>
+                        <div class="summary-content">
+                            <h3>Total em Comissões</h3>
+                            <p class="summary-value">R$ ${totalGeralComissoes.toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-icon">👥</div>
+                        <div class="summary-content">
+                            <h3>Vendedores</h3>
+                            <p class="summary-value">${comissoes.length}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            comissoes.forEach(vendedor => {
+                html += `
+                    <div class="vendedor-card">
+                        <div class="vendedor-header">
+                            <div>
+                                <h2>👤 ${vendedor.vendedor}</h2>
+                                <p class="vendedor-info">${vendedor.qtdVendas} vendas realizadas</p>
+                            </div>
+                            <div class="vendedor-totais">
+                                <div class="total-item">
+                                    <span class="total-label">Total Vendas</span>
+                                    <span class="total-value">R$ ${vendedor.totalVendas.toFixed(2)}</span>
+                                </div>
+                                <div class="total-item highlight">
+                                    <span class="total-label">Total Comissão</span>
+                                    <span class="total-value">R$ ${vendedor.totalComissao.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="vendas-detalhes">
+                            <h3>Detalhes das Vendas</h3>
+                            <table class="vendas-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Valor da Venda</th>
+                                        <th>Percentual</th>
+                                        <th>Comissão</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+
+                vendedor.vendasDetalhes.forEach((venda, index) => {
+                    const percentualClass = venda.percentualStr === '0%' ? 'zero' : 
+                                          venda.percentualStr === '1%' ? 'low' : 'high';
+                    
+                    html += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>R$ ${venda.valor.toFixed(2)}</td>
+                            <td><span class="percentual-badge ${percentualClass}">${venda.percentualStr}</span></td>
+                            <td class="comissao-value">R$ ${venda.comissao.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                                    <tr class="total-row">
+                                        <td colspan="1"><strong>TOTAL</strong></td>
+                                        <td><strong>R$ ${vendedor.totalVendas.toFixed(2)}</strong></td>
+                                        <td></td>
+                                        <td class="comissao-value"><strong>R$ ${vendedor.totalComissao.toFixed(2)}</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        window.addEventListener('DOMContentLoaded', carregarComissoes);
+    </script>
+</body>
+</html>

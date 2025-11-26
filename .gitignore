@@ -1,0 +1,67 @@
+# Binários compilados
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+main
+main.exe
+
+# Test binaries
+*.test
+
+# Output do build do Go
+*.out
+
+# Arquivos temporários do Air
+tmp/
+.air.toml.tmp
+
+# Logs
+*.log
+build-errors.log
+
+# Dependências do Go
+vendor/
+
+# IDEs e editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Arquivos de ambiente (IMPORTANTE: nunca versionar credenciais!)
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.crt
+
+# Arquivos de configuração com credenciais
+config/secrets.json
+config/credentials.json
+
+# Arquivos de banco de dados local
+*.db
+*.sqlite
+*.sqlite3
+
+# Coverage
+*.out
+coverage.txt
+coverage.html
+
+# Go workspace file (Go 1.18+)
+go.work
+go.work.sum
+
+# Arquivos de cache
+*.cache
+.cache/
+
+# Build artifacts
+dist/
+build/
